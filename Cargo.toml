@@ -1,0 +1,5 @@
+[package]
+name = "rsrs"
+description = "A naive rust implementation of the Reed-Solomon erasure codes algorithm"
+version = "0.1.0"
+edition = "2021"
