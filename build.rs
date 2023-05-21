@@ -1,3 +1,4 @@
+// Adopted from https://github.com/rust-rse/reed-solomon-erasure/blob/master/build.rs
 use std::fs::File;
 use std::io::Write;
 
@@ -46,7 +47,7 @@ macro_rules! write_table {
 fn generate_tables() {
     let (log_table, exp_table) = gen_log_exp_table(PRIME_POLY);
 
-    let mut f = File::create("src/table.rs").unwrap();
+    let mut f = File::create("src/backend/table.rs").unwrap();
 
     write_table!(f, log_table, "LOG_TABLE", "u8");
     write_table!(f, exp_table, "EXP_TABLE", "u8");
