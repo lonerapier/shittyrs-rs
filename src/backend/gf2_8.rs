@@ -2,6 +2,7 @@ include!("./table.rs");
 
 use crate::ff::Fp;
 
+#[derive(Debug, Clone, Copy)]
 pub struct GF2k;
 
 impl Fp for GF2k {
@@ -83,10 +84,70 @@ impl Fp for GF2k {
     fn neg(a: Self::Elem) -> Self::Elem {
         a
     }
+
+    #[inline]
+    fn eq(a: &Self::Elem, b: &Self::Elem) -> bool {
+        a == b
+    }
+
+    fn from_u8(a: u8) -> Self::Elem {
+        a
+    }
 }
 
-// impl std::ops::AddAssign for GF2k {
-//     fn add_assign(&mut self, rhs: Self) {
-//         let res = Self::add(*self, rhs);
-//     }
-// }
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_add() {
+        assert_eq!(GF2k::add(0, 0), 0);
+        assert_eq!(GF2k::add(0, 1), 1);
+        assert_eq!(GF2k::add(1, 0), 1);
+        assert_eq!(GF2k::add(1, 1), 0);
+    }
+
+    #[test]
+    fn test_sub() {
+        assert_eq!(GF2k::sub(0, 0), 0);
+        assert_eq!(GF2k::sub(0, 1), 1);
+        assert_eq!(GF2k::sub(1, 0), 1);
+        assert_eq!(GF2k::sub(1, 1), 0);
+    }
+
+    #[test]
+    fn test_mul() {
+        assert_eq!(GF2k::mul(0, 0), 0);
+        assert_eq!(GF2k::mul(0, 1), 0);
+        assert_eq!(GF2k::mul(1, 0), 0);
+        assert_eq!(GF2k::mul(1, 1), 1);
+    }
+
+    #[test]
+    fn test_exp() {
+        assert_eq!(GF2k::exp(0, 0), 1);
+        assert_eq!(GF2k::exp(0, 1), 0);
+        assert_eq!(GF2k::exp(1, 0), 1);
+        assert_eq!(GF2k::exp(1, 1), 1);
+    }
+
+    #[test]
+    fn test_inverse() {
+        assert_eq!(GF2k::inverse(0), None);
+        assert_eq!(GF2k::inverse(1), Some(1));
+    }
+
+    #[test]
+    fn test_div() {
+        assert_eq!(GF2k::div(0, 0), None);
+        assert_eq!(GF2k::div(0, 1), Some(0));
+        assert_eq!(GF2k::div(1, 0), None);
+        assert_eq!(GF2k::div(1, 1), Some(1));
+    }
+
+    #[test]
+    fn test_neg() {
+        assert_eq!(GF2k::neg(0), 0);
+        assert_eq!(GF2k::neg(1), 1);
+    }
+}
