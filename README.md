@@ -18,7 +18,7 @@ There are much performat and mature implementations out there, if you need it fo
 ## TODO
 
 - [x] Implement Field and Polynomial traits.
-- [ ] create a struct of field::elem and then implement traits on that, eg: addassign, subassign, etc.
+- [x] create a struct of field::elem and then implement traits on that, eg: addassign, subassign, etc.
 - [ ] write tests for traits
 - [ ] implement gf_16 backend
 - [ ] Implement Berklemassamp decoding algorithm
