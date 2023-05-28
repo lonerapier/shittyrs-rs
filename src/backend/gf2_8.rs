@@ -93,6 +93,10 @@ impl Fp for GF2k {
     fn from_u8(a: u8) -> Self::Elem {
         a
     }
+
+    fn to_u8(a: Self::Elem) -> u8 {
+        a
+    }
 }
 
 #[cfg(test)]

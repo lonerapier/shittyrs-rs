@@ -1,4 +1,9 @@
-use crate::ff::{FieldElement, Fp};
+use num_traits::Zero;
+
+use crate::{
+    errors::Errors,
+    ff::{FieldElement, Fp},
+};
 
 /// Trait for polynomial operations
 pub trait PolynomialOps: Sized {
@@ -34,7 +39,7 @@ pub struct Polynomial<E> {
 }
 
 impl<F: Fp> Polynomial<FieldElement<F>> {
-    pub fn new(coeffs: &[FieldElement<F>]) -> Self {
+    pub fn new(coeffs: &[FieldElement<F>]) -> Result<Self, Errors> {
         // TODO: done some sure shit here which is not rust worthy.
         let from = match coeffs.iter().position(|x| *x != FieldElement::zero()) {
             Some(i) => i,
@@ -42,12 +47,12 @@ impl<F: Fp> Polynomial<FieldElement<F>> {
         };
 
         if from > coeffs.len() {
-            panic!("Empty polynomial");
+            return Err(Errors::InvalidMessage);
         }
 
-        Polynomial {
+        Ok(Polynomial {
             coeffs: coeffs[from..].to_vec(),
-        }
+        })
     }
 
     // value of a polynomial at a point using Horner's method.
@@ -59,6 +64,15 @@ impl<F: Fp> Polynomial<FieldElement<F>> {
         }
 
         result
+    }
+
+    pub fn is_zero(&self) -> bool {
+        let result = match self.coeffs.iter().position(|x| *x != FieldElement::zero()) {
+            Some(i) => i,
+            None => self.len() + 1,
+        };
+
+        result > self.len()
     }
 }
 
@@ -124,6 +138,7 @@ impl<F: Fp> PolynomialOps for Polynomial<FieldElement<F>> {
     }
 
     /// Implements Synthetic division method along with some optimisations mentioned [here](https://research.swtch.com/field).
+    /// TODO: should return Result<Self, Errors>?
     fn div(&self, divisor: &Self) -> (Self, Self) {
         let mut coefficients = self.coeffs.clone();
 
@@ -157,30 +172,32 @@ impl<F: Fp> PolynomialOps for Polynomial<FieldElement<F>> {
 #[cfg(test)]
 mod tests {
 
+    use num_traits::{One, Zero};
+
     use super::{Polynomial, PolynomialOps};
     use crate::backend::gf2_8::GF2k;
-    use crate::ff::{FieldElement, Fp};
+    use crate::ff::FieldElement;
     type Elem = FieldElement<GF2k>;
 
     #[test]
     fn new_polynomial() {
         let coeffs = [Elem::one(); 3];
-        let poly = Polynomial::new(&coeffs);
+        let poly = Polynomial::new(&coeffs).unwrap();
 
         assert_eq!(poly.len(), coeffs.len());
     }
 
     #[test]
     fn evaluate() {
-        let poly = Polynomial::new(&[Elem::one(); 3]);
+        let poly = Polynomial::new(&[Elem::one(); 3]).unwrap();
 
         assert_eq!(poly.evaluate(&Elem::new(10)), 79.into());
     }
 
     #[test]
     fn add() {
-        let poly1 = Polynomial::new(&[Elem::one(), Elem::new(10)]);
-        let poly2 = Polynomial::new(&[Elem::one(), Elem::new(10)]);
+        let poly1 = Polynomial::new(&[Elem::one(), Elem::new(10)]).unwrap();
+        let poly2 = Polynomial::new(&[Elem::one(), Elem::new(10)]).unwrap();
 
         let poly3 = poly1.add(&poly2);
 
@@ -189,8 +206,8 @@ mod tests {
 
     #[test]
     fn sub() {
-        let poly1 = Polynomial::new(&[Elem::one(), Elem::new(10)]);
-        let poly2 = Polynomial::new(&[Elem::one(), Elem::new(10)]);
+        let poly1 = Polynomial::new(&[Elem::one(), Elem::new(10)]).unwrap();
+        let poly2 = Polynomial::new(&[Elem::one(), Elem::new(10)]).unwrap();
 
         let poly3 = poly1.sub(&poly2);
 
@@ -199,8 +216,8 @@ mod tests {
 
     #[test]
     fn mul() {
-        let poly1 = Polynomial::new(&[Elem::one(), Elem::new(1)]);
-        let poly2 = Polynomial::new(&[Elem::one(), Elem::new(2)]);
+        let poly1 = Polynomial::new(&[Elem::one(), Elem::new(1)]).unwrap();
+        let poly2 = Polynomial::new(&[Elem::one(), Elem::new(2)]).unwrap();
 
         let poly3 = poly1.mul(&poly2);
 
@@ -212,8 +229,8 @@ mod tests {
 
     #[test]
     fn div() {
-        let poly1 = Polynomial::new(&[Elem::one(), Elem::new(10)]);
-        let poly2 = Polynomial::new(&[Elem::one(), Elem::new(10)]);
+        let poly1 = Polynomial::new(&[Elem::one(), Elem::new(10)]).unwrap();
+        let poly2 = Polynomial::new(&[Elem::one(), Elem::new(10)]).unwrap();
 
         let (poly3, poly4) = poly1.div(&poly2);
 
@@ -223,8 +240,8 @@ mod tests {
 
     #[test]
     fn rem() {
-        let poly1 = Polynomial::new(&[Elem::one(), Elem::new(10)]);
-        let poly2 = Polynomial::new(&[Elem::one(), Elem::new(10)]);
+        let poly1 = Polynomial::new(&[Elem::one(), Elem::new(10)]).unwrap();
+        let poly2 = Polynomial::new(&[Elem::one(), Elem::new(10)]).unwrap();
 
         let poly3 = poly1.rem(&poly2);
 
@@ -233,14 +250,14 @@ mod tests {
 
     #[test]
     fn degree() {
-        let poly1 = Polynomial::new(&[Elem::one(), Elem::new(10)]);
+        let poly1 = Polynomial::new(&[Elem::one(), Elem::new(10)]).unwrap();
 
         assert_eq!(poly1.degree(), 1);
     }
 
     #[test]
     fn len() {
-        let poly1 = Polynomial::new(&[Elem::one(), Elem::new(10)]);
+        let poly1 = Polynomial::new(&[Elem::one(), Elem::new(10)]).unwrap();
 
         assert_eq!(poly1.len(), 2);
     }

@@ -1,3 +1,5 @@
+/// Implementation adapted from [lambaworks_kzg](https://github.com/lambdaclass/lambdaworks_kzg)
+
 /// Trait for finite fields
 pub trait Fp: Sized + Clone {
     /// The order of the field
