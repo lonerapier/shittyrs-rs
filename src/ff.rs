@@ -40,6 +40,8 @@ pub trait Fp: Sized + Clone {
     fn eq(a: &Self::Elem, b: &Self::Elem) -> bool;
 
     fn from_u8(a: u8) -> Self::Elem;
+
+    fn to_u8(a: Self::Elem) -> u8;
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -52,6 +54,12 @@ impl<F: Fp> From<u8> for FieldElement<F> {
         Self {
             value: F::from_u8(value),
         }
+    }
+}
+
+impl<F: Fp> From<FieldElement<F>> for u8 {
+    fn from(elem: FieldElement<F>) -> Self {
+        F::to_u8(elem.value)
     }
 }
 
@@ -173,16 +181,34 @@ impl<F: Fp> std::cmp::PartialEq for FieldElement<F> {
     }
 }
 
+impl<F: Fp> num_traits::Zero for FieldElement<F> {
+    fn zero() -> Self {
+        Self::new(F::zero())
+    }
+
+    fn is_zero(&self) -> bool {
+        F::eq(&self.value, &F::zero())
+    }
+}
+
+impl<F: Fp> num_traits::One for FieldElement<F> {
+    fn one() -> Self {
+        Self::new(F::one())
+    }
+}
+
+impl<F: Fp> num_traits::pow::Pow<usize> for &FieldElement<F> {
+    type Output = FieldElement<F>;
+
+    fn pow(self, exp: usize) -> Self::Output {
+        Self::Output {
+            value: F::exp(self.value, exp),
+        }
+    }
+}
+
 impl<F: Fp> FieldElement<F> {
     pub fn new(value: F::Elem) -> Self {
         Self { value }
-    }
-
-    pub fn zero() -> Self {
-        Self { value: F::zero() }
-    }
-
-    pub fn one() -> Self {
-        Self { value: F::one() }
     }
 }
